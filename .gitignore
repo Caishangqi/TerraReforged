@@ -14,11 +14,9 @@
 !/LICENSE
 !/README.md
 
-# GitHub issue and pull request templates. CODEOWNERS and the workflows are not published: the
-# upstream ones name upstream reviewers and pin a JDK this tree cannot build on.
+# GitHub templates and workflows. CODEOWNERS stays out: the upstream one names upstream reviewers.
 !/.github/
 /.github/CODEOWNERS
-/.github/workflows/
 
 # Gradle build
 !/build.gradle.kts

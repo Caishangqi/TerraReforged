@@ -4,8 +4,7 @@
 
 TerraReforged is a fork of [Terra](https://github.com/PolyhedralDev/Terra) brought up to a current
 Minecraft version. Upstream Terra targets 1.21.10. This tree ports its Paper side to Minecraft 26.2,
-the release after 1.21.11: the version numbering went 1.21.11, then 26.1, then 26.2, so there is no
-1.26.2 artifact to look for.
+the release after 1.21.11: the version numbering went 1.21.11, then 26.1, then 26.2.
 
 Terra generates worlds from configuration rather than from code. A config pack describes biomes,
 terrain, ore, flora, structures and the noise behind them in YAML and TerraScript, and the generator

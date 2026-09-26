@@ -44,11 +44,10 @@ afterEvaluate {
     }
     project(":platforms:bukkit:common").configureDistribution()
     forSubProjects(":common:addons") {
+        // Shadow 9 wires shadowJar into assemble itself, so an addon's build already produces its
+        // shaded jar. Adding `build finalizedBy shadowJar` on top of that made `./gradlew build` fail
+        // with a circular dependency: build -> assemble -> shadowJar -> build.
         apply(plugin = "com.gradleup.shadow")
-
-        tasks.named("build") {
-            finalizedBy(tasks.named("shadowJar"))
-        }
 
         dependencies {
             "compileOnly"(project(":common:api"))
