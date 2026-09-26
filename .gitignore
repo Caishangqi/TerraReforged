@@ -1,0 +1,57 @@
+# Allowlist, not a blocklist. Everything is ignored, and only what is listed below is tracked.
+#
+# A blocklist leaks by omission: any file nobody thought to add a rule for ends up in the repository.
+# This way a new local file, a tool output or a server directory is ignored until someone decides it
+# belongs in the project. Add a line here when you want something published.
+
+# Ignore every top-level entry, then re-add the ones that are source.
+/*
+
+# Repository files
+!/.gitignore
+!/.gitattributes
+!/.editorconfig
+!/LICENSE
+!/README.md
+
+# GitHub issue and pull request templates. CODEOWNERS and the workflows are not published: the
+# upstream ones name upstream reviewers and pin a JDK this tree cannot build on.
+!/.github/
+/.github/CODEOWNERS
+/.github/workflows/
+
+# Gradle build
+!/build.gradle.kts
+!/settings.gradle.kts
+!/gradle.properties
+!/gradlew
+!/gradlew.bat
+!/gradle/
+!/buildSrc/
+
+# Source
+!/common/
+!/platforms/
+
+# Inside the trees above, generated output and local state stay out. These are path-independent, so
+# they apply at any depth.
+build/
+out/
+run/
+.gradle/
+.kotlin/
+.idea/
+.vscode/
+.fleet/
+*.iml
+*.ipr
+*.iws
+__pycache__/
+*.py[cod]
+*.class
+*.log
+*.hprof
+hs_err_pid*
+.DS_Store
+Thumbs.db
+desktop.ini

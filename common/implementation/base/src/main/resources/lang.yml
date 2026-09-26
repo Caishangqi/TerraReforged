@@ -1,0 +1,65 @@
+# TerraReforged console messages.
+#
+# Every value is a MiniMessage template. These all work:
+#
+#   <#529ced>text                          a hex colour
+#   <gradient:#7bd85a:#00b7ff>text</gradient>
+#   <white>, <dark_gray>, <b>, <italic>     named colours and decorations
+#   &a, &#55ffa4, §a                        legacy codes, if you prefer them
+#
+# Two kinds of placeholder are available:
+#
+#   <prefix>   the "TerraReforged |" prefix built from the `prefix` value below. Drop it from a value
+#              and that line prints without the prefix.
+#   <name>     the plugin name, and one more tag per line, listed in the comment above it.
+#
+# Deleting a value, or leaving it blank, falls back to the English default compiled into the jar.
+# Adding a key that is not listed here does nothing: only these keys are read.
+
+prefix: "<gradient:#7bd85a:#00b7ff><name></gradient> <dark_gray>|</dark_gray> "
+
+# The startup banner. These four print under the ASCII logo and use no <prefix>.
+banner:
+  # <version>
+  version: "<#529ced><name> <white>v<version>"
+  # <authors>
+  authors: "<#529ced>Authors: <white><authors>"
+  # <platform> - the server implementation and its version
+  platform: "<#529ced>Running on <white><platform>"
+  # <jvm>
+  jvm: "<#529ced>JVM: <white><jvm>"
+
+platform:
+  # <minecraft>, <implementation>
+  server-version: "<prefix><#529ced>Running on Minecraft <white><minecraft></white> with server implementation <white><implementation></white>."
+  bukkit-server: "<prefix><#e73f34>This is a CraftBukkit or Bukkit server. <name> needs Paper; please upgrade."
+  spigot-server: "<prefix><#e73f34>This is a Spigot server. <name> needs Paper; please upgrade."
+  command-failure: "<prefix><#e73f34><name> has been disabled: its commands could not be registered. Please report this."
+
+  initializing: "<prefix><#529ced>Initializing <name>..."
+  config-loading: "<prefix><#529ced>Loading <white>config.yml</white>."
+  config-dumping: "<prefix><#529ced>Writing the default <white>config.yml</white>."
+  config-missing: "<prefix><#f9f178>config.yml is not present in the jar."
+  # <file>
+  lang-dumping: "<prefix><#529ced>Writing the default <white><file></white>."
+  # <file>
+  lang-failed: "<prefix><#f9f178>Could not read <white><file></white>; using the built-in messages."
+  # <count>
+  addons-loaded: "<prefix><#55ffa4>Loaded <white><count></white> addons."
+  ready: "<prefix><#55ffa4><name> finished initialization."
+
+  packs-loading: "<prefix><#529ced>Loading config packs..."
+  # <count>
+  packs-loaded: "<prefix><#55ffa4>Loaded <white><count></white> config packs."
+  # <count>, <failed> - some packs loaded and some did not
+  packs-partial: "<prefix><#f9f178>Loaded <white><count></white> config packs; <white><failed></white> could not be read. The log holds each reason."
+  packs-failed: "<prefix><#e73f34>Failed to load config packs. The log holds the reason."
+  metapacks-loading: "<prefix><#529ced>Loading meta config packs..."
+  # <count>
+  metapacks-loaded: "<prefix><#55ffa4>Loaded <white><count></white> meta config packs."
+  # <count>, <failed>
+  metapacks-partial: "<prefix><#f9f178>Loaded <white><count></white> meta config packs; <white><failed></white> could not be read. The log holds each reason."
+  metapacks-failed: "<prefix><#e73f34>Failed to load meta config packs. The log holds the reason."
+
+  # <world>
+  generator-replaced: "<prefix><#529ced>Replaced the pack in the chunk generator for world <white><world></white>."

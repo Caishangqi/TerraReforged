@@ -1,0 +1,76 @@
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.creating
+import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.getValue
+import org.gradle.kotlin.dsl.getting
+import org.gradle.kotlin.dsl.maven
+import org.gradle.kotlin.dsl.repositories
+
+fun Project.configureDependencies() {
+    val testImplementation by configurations.getting
+    val compileOnly by configurations.getting
+    
+    val api by configurations.getting
+    val implementation by configurations.getting
+    
+    val shaded by configurations.creating
+    
+    @Suppress("UNUSED_VARIABLE")
+    val shadedApi by configurations.creating {
+        shaded.extendsFrom(this)
+        api.extendsFrom(this)
+    }
+    
+    @Suppress("UNUSED_VARIABLE")
+    val shadedImplementation by configurations.creating {
+        shaded.extendsFrom(this)
+        implementation.extendsFrom(this)
+    }
+    
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        maven("https://maven.solo-studios.ca/releases") {
+            name = "Solo Studios"
+        }
+        maven("https://maven.solo-studios.ca/snapshots") {
+            name = "Solo Studios"
+        }
+        maven("https://maven.fabricmc.net/") {
+            name = "FabricMC"
+        }
+        maven("https://repo.codemc.org/repository/maven-public") {
+            name = "CodeMC"
+        }
+        maven("https://repo.papermc.io/repository/maven-public/") {
+            name = "PaperMC"
+        }
+        maven("https://files.minecraftforge.net/maven/") {
+            name = "Forge"
+        }
+        maven("https://maven.quiltmc.org/repository/release/") {
+            name = "Quilt"
+        }
+        maven("https://jitpack.io") {
+            name = "JitPack"
+        }
+        maven("https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+            name = "Sonatype Snapshots"
+        }
+        maven("https://repo.onarandombox.com/multiverse-releases") {
+            name = "onarandombox"
+        }
+        maven("https://repo.oraxen.com/releases") {
+            name = "Oraxen"
+        }
+    }
+    
+    dependencies {
+        testImplementation("org.junit.jupiter", "junit-jupiter", Versions.Libraries.Internal.junit)
+        "testRuntimeOnly"("org.junit.platform", "junit-platform-launcher")
+        compileOnly("org.jetbrains", "annotations", Versions.Libraries.Internal.jetBrainsAnnotations)
+        
+        compileOnly("com.google.guava", "guava", Versions.Libraries.Internal.guava)
+        testImplementation("com.google.guava", "guava", Versions.Libraries.Internal.guava)
+    }
+}

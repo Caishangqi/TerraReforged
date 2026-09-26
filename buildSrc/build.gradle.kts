@@ -1,0 +1,34 @@
+plugins {
+    `kotlin-dsl`
+    kotlin("jvm") version embeddedKotlinVersion
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+    maven("https://maven.solo-studios.ca/releases") {
+        name = "Solo Studios"
+    }
+    maven("https://maven.solo-studios.ca/snapshots") {
+        name = "Solo Studios"
+    }
+    maven("https://repo.codemc.org/repository/maven-public") {
+        name = "CodeMC"
+    }
+    maven("https://repo.papermc.io/repository/maven-public/") {
+        name = "PaperMC"
+    }
+}
+
+dependencies {
+    //TODO Allow pulling from Versions.kt
+    implementation("com.gradleup.shadow", "shadow-gradle-plugin", "9.6.1")
+
+    // Single source of truth for the Paperweight version: buildSrc resolves this before Versions.kt exists.
+    // Every 2.0.0-beta from 19 onward declares plugin.api-version 9.x, so Gradle 9 is not optional here.
+    implementation("io.papermc.paperweight.userdev", "io.papermc.paperweight.userdev.gradle.plugin", "2.0.0-beta.23")
+    implementation("org.ow2.asm", "asm", "9.9")
+    implementation("org.ow2.asm", "asm-tree", "9.9")
+    implementation("com.dfsek.tectonic", "common", "4.3.1")
+    implementation("org.yaml", "snakeyaml", "2.5")
+}

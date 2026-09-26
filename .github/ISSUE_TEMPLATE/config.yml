@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Terra Wiki
+    url: https://github.com/PolyhedralDev/Terra/wiki
+    about: Documentation for writing a config pack. TerraReforged keeps Terra's pack format, so this applies here.

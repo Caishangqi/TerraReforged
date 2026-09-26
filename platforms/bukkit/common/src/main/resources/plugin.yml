@@ -1,0 +1,9 @@
+name: "TerraReforged"
+main: "com.dfsek.terra.bukkit.TerraBukkitPlugin"
+version: "@VERSION@"
+load: "STARTUP"
+authors: [ "dfsek", "duplexsystem", "Astrash", "solonovamax", "Sancires", "Aureus", "RogueShade", "OakLoaf", "Caizii" ]
+website: "@WIKI@"
+api-version: "1.21.1"
+description: "@DESCRIPTION@"
+folia-supported: true
