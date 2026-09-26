@@ -4,3 +4,9 @@
 # These are explicitly windows files and should use crlf
 *.bat           text eol=crlf
 
+# The Gradle wrapper script is run by /bin/sh on Linux and macOS, so it must keep LF whatever the
+# committer's core.autocrlf is set to. A CRLF copy fails with "bad interpreter" rather than with
+# anything that names the cause. Its executable bit is in the index; keep it if you ever replace the
+# wrapper from Windows, where Git does not track file modes.
+gradlew         text eol=lf
+
