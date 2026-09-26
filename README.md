@@ -1,6 +1,15 @@
-<img align="left" width="64" height="64" src="https://raw.githubusercontent.com/wiki/PolyhedralDev/Terra/images/terra_logo.png" alt="Terra Logo">
+<p align="center"><img src="https://raw.githubusercontent.com/wiki/PolyhedralDev/Terra/images/terra_logo.png" alt="Logo" width="300"></p>
 
-# TerraReforged
+<h1 align="center">TerraReforged</h1>
+<h4 align="center">A modern world generation modding platform, primarily for Minecraft</h4>
+<p align="center">
+<img alt="MinecraftVersion" src="https://img.shields.io/badge/Minecraft-26.2-0E1128?logo=minecraft">
+<img alt="PaperVersion" src="https://img.shields.io/badge/Paper-26.2-yellow?logo=minecraft">
+<img alt="PurpurVersion" src="https://img.shields.io/badge/Purpur-26.2-purple?logo=minecraft">
+<img alt="Project Status" src="https://img.shields.io/badge/Status-beta-green">
+</p>
+
+## What You Can Build
 
 TerraReforged is a fork of [Terra](https://github.com/PolyhedralDev/Terra) brought up to a current
 Minecraft version. Upstream Terra targets 1.21.10. This tree ports its Paper side to Minecraft 26.2,
