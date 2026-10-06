@@ -26,20 +26,33 @@ import org.slf4j.LoggerFactory;
 import com.dfsek.terra.api.block.state.BlockState;
 import com.dfsek.terra.api.entity.EntityType;
 import com.dfsek.terra.api.handle.WorldHandle;
+import com.dfsek.terra.bukkit.hooks.CustomBlocks;
 import com.dfsek.terra.bukkit.util.BukkitUtils;
 import com.dfsek.terra.bukkit.world.block.data.BukkitBlockState;
 
 
 public class BukkitWorldHandle implements WorldHandle {
     private static final Logger logger = LoggerFactory.getLogger(BukkitWorldHandle.class);
-    private final BlockState air;
+    private final CustomBlocks customBlocks;
+    private BlockState air;
 
     public BukkitWorldHandle() {
-        this.air = BukkitBlockState.newInstance(Material.AIR.createBlockData());
+        this(null);
+    }
+
+    public BukkitWorldHandle(CustomBlocks customBlocks) {
+        this.customBlocks = customBlocks;
     }
 
     @Override
     public synchronized @NotNull BlockState createBlockState(@NotNull String data) {
+        if(customBlocks != null && customBlocks.claims(data)) {
+            try {
+                return customBlocks.parse(data, null);
+            } catch(Exception e) {
+                throw new IllegalArgumentException("Failed to parse custom block data \"" + data + "\": " + e.getMessage(), e);
+            }
+        }
         org.bukkit.block.data.BlockData bukkitData = Bukkit.createBlockData(
             data); // somehow bukkit managed to make this not thread safe! :)
         return BukkitBlockState.newInstance(bukkitData);
@@ -47,6 +60,9 @@ public class BukkitWorldHandle implements WorldHandle {
 
     @Override
     public @NotNull BlockState air() {
+        if(air == null) {
+            air = BukkitBlockState.newInstance(Material.AIR.createBlockData());
+        }
         return air;
     }
 

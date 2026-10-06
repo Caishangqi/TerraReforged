@@ -88,6 +88,15 @@ public final class Messages {
         lines.put("platform.generator-replaced",
             "<prefix><#529ced>Replaced the pack in the chunk generator for world <white><world></white>.");
 
+        lines.put("custom-blocks.plugin-missing",
+            "\"<data>\" is a <plugin> block, but <plugin> is not installed on this server.");
+        lines.put("custom-blocks.not-for-matching",
+            "\"<data>\" can only be used where Terra places a block, not where it matches one.\nTerra asks the plugin that owns the block what it is at the moment it places it, and a match is decided while packs load, before that plugin exists.");
+        lines.put("custom-blocks.not-loaded",
+            "Cannot place <data>: <plugin> has not loaded its blocks yet.\nA world listed in bukkit.yml finishes generating its spawn area during server startup, before <plugin> is enabled, so it cannot use <plugin> blocks. Create such a world after startup instead.");
+        lines.put("custom-blocks.unknown-block",
+            "<plugin> has no block called <data>.\nTerra can only generate custom blocks registered and loaded by <plugin>.");
+
         return new Messages(lines);
     }
 
@@ -152,6 +161,27 @@ public final class Messages {
 
     public boolean has(String key) {
         return lines.containsKey(key);
+    }
+
+    /**
+     * Resolves plain string replacements for a template line.
+     * Replaces &lt;placeholder&gt; tags with the corresponding values in {@code replacements}.
+     */
+    public String format(String key, Map<String, String> replacements) {
+        String text = template(key);
+        if(replacements != null) {
+            for(Map.Entry<String, String> entry : replacements.entrySet()) {
+                text = text.replace("<" + entry.getKey() + ">", entry.getValue());
+            }
+        }
+        return text;
+    }
+
+    /**
+     * Static helper resolving a message key with placeholders against the defaults.
+     */
+    public static String get(String key, Map<String, String> replacements) {
+        return defaults().format(key, replacements);
     }
 
     /** Flattens nested YAML maps to dotted keys. Lists are skipped: no template is a list. */

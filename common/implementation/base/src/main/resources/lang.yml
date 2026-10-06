@@ -63,3 +63,13 @@ platform:
 
   # <world>
   generator-replaced: "<prefix><#529ced>Replaced the pack in the chunk generator for world <white><world></white>."
+
+custom-blocks:
+  # <data>, <plugin>
+  plugin-missing: "\"<data>\" is a <plugin> block, but <plugin> is not installed on this server."
+  # <data>
+  not-for-matching: "\"<data>\" can only be used where Terra places a block, not where it matches one.\nTerra asks the plugin that owns the block what it is at the moment it places it, and a match is decided while packs load, before that plugin exists."
+  # <data>, <plugin>
+  not-loaded: "Cannot place <data>: <plugin> has not loaded its blocks yet.\nA world listed in bukkit.yml finishes generating its spawn area during server startup, before <plugin> is enabled, so it cannot use <plugin> blocks. Create such a world after startup instead."
+  # <data>, <plugin>
+  unknown-block: "<plugin> has no block called <data>.\nTerra can only generate custom blocks registered and loaded by <plugin>."

@@ -2,7 +2,10 @@ package com.dfsek.terra.bukkit.hooks;
 
 import org.bukkit.block.data.BlockData;
 
+import java.util.Map;
+
 import com.dfsek.terra.bukkit.world.block.data.BukkitBlockState;
+import com.dfsek.terra.lang.Messages;
 
 
 /**
@@ -48,17 +51,15 @@ public final class OraxenBlockState extends BukkitBlockState {
         String origin = "\"oraxen:%s\", named by %s at %s".formatted(id, configuration, path);
 
         if(!table.isLoaded()) {
-            return """
-                   Cannot place %s: Oraxen has not loaded its blocks yet.
-                   A world listed in bukkit.yml finishes generating its spawn area during server startup, \
-                   before Oraxen is enabled, so it cannot use Oraxen blocks. Create such a world after \
-                   startup instead.""".formatted(origin);
+            return Messages.get("custom-blocks.not-loaded", Map.of(
+                "data", origin,
+                "plugin", "Oraxen"
+            ));
         }
 
-        return """
-               Oraxen has no block called %s.
-               Terra can generate Oraxen's noteblock, stringblock and chorus blocks. Shaped blocks and \
-               furniture are not supported, and an id of either kind reaches here looking like a \
-               typo.""".formatted(origin);
+        return Messages.get("custom-blocks.unknown-block", Map.of(
+            "data", origin,
+            "plugin", "Oraxen"
+        ));
     }
 }

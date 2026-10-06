@@ -1,5 +1,6 @@
 repositories {
-
+    mavenLocal()
+    maven("https://repo.momirealms.net/releases/")
 }
 
 dependencies {
@@ -14,6 +15,9 @@ dependencies {
     compileOnly("org.mvplugins.multiverse.core", "multiverse-core", Versions.Bukkit.multiverse)
 
     compileOnly("io.th0rgal", "oraxen", Versions.Bukkit.oraxen)
+
+    compileOnly("net.momirealms", "craft-engine-core", Versions.Bukkit.craftEngine)
+    compileOnly("net.momirealms", "craft-engine-bukkit", Versions.Bukkit.craftEngine)
 
     shadedApi("io.papermc", "paperlib", Versions.Bukkit.paperLib)
 

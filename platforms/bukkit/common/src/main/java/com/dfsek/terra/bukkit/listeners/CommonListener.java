@@ -36,9 +36,6 @@ import java.util.List;
 import com.dfsek.terra.api.config.ConfigPack;
 import com.dfsek.terra.bukkit.PlatformImpl;
 import com.dfsek.terra.bukkit.generator.BukkitChunkGeneratorWrapper;
-import com.dfsek.terra.bukkit.hooks.MultiverseGeneratorPluginHook;
-import com.dfsek.terra.bukkit.hooks.OraxenBlockHook;
-import com.dfsek.terra.bukkit.hooks.OraxenBlockPlacer;
 import com.dfsek.terra.bukkit.world.BukkitBiomeInfo;
 import com.dfsek.terra.bukkit.world.BukkitPlatformBiome;
 
@@ -59,38 +56,7 @@ public class CommonListener implements Listener {
 
     @EventHandler
     public void onPluginEnable(PluginEnableEvent event) {
-        if(event.getPlugin().getName().equals("Multiverse-Core")) {
-            try {
-                Class.forName("org.mvplugins.multiverse.core.MultiverseCoreApi");
-                MultiverseGeneratorPluginHook.register(platform);
-            } catch(ClassNotFoundException e) {
-                logger.debug("Multiverse v5 is not installed.");
-            } catch(IllegalStateException e) {
-                logger.error("Failed to register Terra generator plugin to multiverse.", e);
-            }
-        }
-
-        if(event.getPlugin().getName().equals("Oraxen")) {
-            hookOraxen();
-        }
-    }
-
-    /**
-     * Separated so that the classes naming Oraxen are reached only after the check that Oraxen's block
-     * API is there. Terra ships them, but it runs on servers that do not have Oraxen, where loading one
-     * would fail.
-     */
-    private void hookOraxen() {
-        try {
-            Class.forName("io.th0rgal.oraxen.api.OraxenBlocks");
-        } catch(ClassNotFoundException e) {
-            logger.error("A plugin called Oraxen is enabled, but its block API is not the one Terra was built "
-                         + "against. Oraxen blocks named by a pack will fail when Terra tries to place them.");
-            return;
-        }
-
-        OraxenBlockHook.register(platform.getPlugin(), platform.getCustomBlocks().oraxen());
-        OraxenBlockPlacer.register(platform.getPlugin(), platform.getCustomBlocks());
+        platform.getHookManager().onPluginEnable(event.getPlugin(), platform);
     }
 
     private void applyWolfVariant(Wolf wolf) {

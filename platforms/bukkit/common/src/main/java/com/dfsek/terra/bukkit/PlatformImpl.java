@@ -39,6 +39,7 @@ import com.dfsek.terra.bukkit.generator.BukkitChunkGeneratorWrapper;
 import com.dfsek.terra.bukkit.handles.BukkitItemHandle;
 import com.dfsek.terra.bukkit.handles.BukkitWorldHandle;
 import com.dfsek.terra.bukkit.hooks.CustomBlocks;
+import com.dfsek.terra.bukkit.hooks.HookManager;
 import com.dfsek.terra.bukkit.world.BukkitPlatformBiome;
 import com.dfsek.terra.log.TerraLog;
 
@@ -46,12 +47,13 @@ import com.dfsek.terra.log.TerraLog;
 public class PlatformImpl extends AbstractPlatform {
     private final ItemHandle itemHandle = new BukkitItemHandle();
 
-    private final WorldHandle handle = new BukkitWorldHandle();
-
     // Blocks belonging to another plugin, which a pack can name but this server may not have. Created
     // here rather than by the integration that fills it, so that a pack can hold such a block on a
     // server where that integration never registers.
     private final CustomBlocks customBlocks = new CustomBlocks();
+
+    private final WorldHandle handle = new BukkitWorldHandle(customBlocks);
+    private final HookManager hookManager = new HookManager();
 
     private final TerraBukkitPlugin plugin;
 
@@ -72,6 +74,10 @@ public class PlatformImpl extends AbstractPlatform {
 
     public CustomBlocks getCustomBlocks() {
         return customBlocks;
+    }
+
+    public HookManager getHookManager() {
+        return hookManager;
     }
 
     @Override

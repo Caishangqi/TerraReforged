@@ -15,13 +15,16 @@ class CustomBlocksTest {
     private final CustomBlocks customBlocks = new CustomBlocks();
 
     @Test
-    void onlyAnOraxenPrefixIsClaimed() {
+    void onlyAnOraxenOrCraftEnginePrefixIsClaimed() {
         assertTrue(customBlocks.claims("oraxen:amethyst_ore"));
+        assertTrue(customBlocks.claims("craftengine:default:palm_log"));
+        assertTrue(customBlocks.claims("ce:default:palm_log"));
         assertFalse(customBlocks.claims("minecraft:note_block"));
         assertFalse(customBlocks.claims("note_block"));
         // A prefix, not a substring, and not a word that merely begins the same way.
         assertFalse(customBlocks.claims("minecraft:oraxen:thing"));
         assertFalse(customBlocks.claims("oraxenite"));
+        assertFalse(customBlocks.claims("minecraft:craftengine:thing"));
     }
 
     @Test

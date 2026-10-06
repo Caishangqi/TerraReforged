@@ -1,0 +1,3 @@
+com.dfsek.terra.bukkit.hooks.MultiverseHook
+com.dfsek.terra.bukkit.hooks.OraxenHook
+com.dfsek.terra.bukkit.hooks.craftengine.CraftEngineHook
