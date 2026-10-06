@@ -93,7 +93,7 @@ object Versions {
         // than it is tested on cannot say which of the two it proved.
         const val oraxen = "1.219.0"
 
-        const val craftEngine = "26.9.2"
+        const val craftEngine = "26.9.1"
 
         // The Paperweight plugin version is not declared here. buildSrc resolves its own plugin
         // classpath before this file compiles, so buildSrc/build.gradle.kts owns that version.

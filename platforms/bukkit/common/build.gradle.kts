@@ -1,5 +1,4 @@
 repositories {
-    mavenLocal()
     maven("https://repo.momirealms.net/releases/")
 }
 
