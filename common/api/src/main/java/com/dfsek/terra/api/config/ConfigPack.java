@@ -28,6 +28,8 @@ import com.dfsek.terra.api.util.reflection.TypeKey;
 import com.dfsek.terra.api.world.biome.generation.BiomeProvider;
 import com.dfsek.terra.api.world.chunk.generation.stage.GenerationStage;
 import com.dfsek.terra.api.world.chunk.generation.util.provider.ChunkGeneratorProvider;
+import com.dfsek.terra.api.world.generation.GenerationMode;
+import com.dfsek.terra.api.world.generation.overlay.Overlay;
 
 
 public interface ConfigPack extends LoaderRegistrar,
@@ -60,4 +62,8 @@ public interface ConfigPack extends LoaderRegistrar,
     }
 
     ChunkGeneratorProvider getGeneratorProvider();
+
+    GenerationMode generationMode();
+
+    Overlay overlay();
 }

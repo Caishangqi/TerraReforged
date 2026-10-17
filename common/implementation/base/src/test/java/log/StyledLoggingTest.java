@@ -86,6 +86,31 @@ class StyledLoggingTest {
     }
 
     @Test
+    void generatorTakeoverMessagesIdentifyModeAndObservedGenerator(@TempDir Path dir) throws IOException {
+        Messages messages = Messages.load(dir.resolve(Messages.RESOURCE), getClass().getClassLoader());
+        TerraLogger logger = logger(messages);
+
+        logger.send("platform.generator-takeover-starting", "world", "test-world");
+        assertEquals("TerraReforged | Preparing generation takeover for world test-world.", lastPlain());
+
+        logger.send("platform.generator-takeover-full", Map.of("world", "full-world"));
+        assertEquals("TerraReforged | Terra full generation is active in world full-world. Height and column queries come from Terra.", lastPlain());
+
+        logger.send("platform.generator-takeover-overlay", Map.of("world", "overlay-world"));
+        assertEquals("TerraReforged | Overlay generation is active in world overlay-world. Vanilla provides base terrain; placement rules select biomes.", lastPlain());
+
+        logger.send("platform.generator-takeover-full-failed", Map.of(
+            "world", "full-world",
+            "generator", "example.VanillaGenerator"));
+        assertEquals("TerraReforged | Could not install Terra full generation in world full-world. The chunk source reports example.VanillaGenerator.", lastPlain());
+
+        logger.send("platform.generator-takeover-overlay-failed", Map.of(
+            "world", "overlay-world",
+            "generator", "example.VanillaGenerator"));
+        assertEquals("TerraReforged | Could not install overlay generation in world overlay-world. The chunk source reports example.VanillaGenerator.", lastPlain());
+    }
+
+    @Test
     void hexColourInATemplateIsApplied() {
         logger(Messages.defaults()).send("platform.ready");
         assertTrue(lastColors().contains(TextColor.fromHexString("#55ffa4")), () -> "expected the success hex, got " + lastColors());

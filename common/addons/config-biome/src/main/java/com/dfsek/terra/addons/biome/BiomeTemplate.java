@@ -22,6 +22,8 @@ import com.dfsek.terra.api.config.AbstractableTemplate;
 import com.dfsek.terra.api.config.ConfigPack;
 import com.dfsek.terra.api.config.meta.Meta;
 import com.dfsek.terra.api.world.biome.PlatformBiome;
+import com.dfsek.terra.api.world.chunk.generation.util.Palette;
+import com.dfsek.terra.api.world.generation.overlay.OverlayMaterialSettings;
 
 
 @SuppressWarnings({ "FieldMayBeFinal", "unused" })
@@ -47,6 +49,26 @@ public class BiomeTemplate implements AbstractableTemplate, ValidatedConfigTempl
     @Value("tags")
     @Default
     private @Meta Set<@Meta String> tags = new HashSet<>();
+
+    @Value("materials.surface.depth")
+    @Default
+    private Integer surfaceDepth = null;
+
+    @Value("materials.surface.palette")
+    @Default
+    private @Meta Palette surfacePalette = null;
+
+    @Value("materials.underground.from-surface")
+    @Default
+    private Integer undergroundFromSurface = null;
+
+    @Value("materials.underground.depth")
+    @Default
+    private Integer undergroundDepth = null;
+
+    @Value("materials.underground.palette")
+    @Default
+    private @Meta Palette undergroundPalette = null;
 
     public BiomeTemplate(ConfigPack pack, Platform platform) {
         this.pack = pack;
@@ -80,5 +102,14 @@ public class BiomeTemplate implements AbstractableTemplate, ValidatedConfigTempl
 
     public PlatformBiome getVanilla() {
         return vanilla;
+    }
+
+    public OverlayMaterialSettings getMaterialSettings() {
+        if(surfacePalette == null && undergroundPalette == null) {
+            return null;
+        }
+        return new OverlayMaterialSettings(surfacePalette, surfaceDepth == null ? 0 : surfaceDepth,
+            undergroundPalette, undergroundFromSurface == null ? 0 : undergroundFromSurface,
+            undergroundDepth == null ? 0 : undergroundDepth);
     }
 }

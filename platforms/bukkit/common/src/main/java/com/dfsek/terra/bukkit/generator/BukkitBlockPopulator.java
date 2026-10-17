@@ -9,6 +9,8 @@ import java.util.Random;
 
 import com.dfsek.terra.api.block.state.BlockState;
 import com.dfsek.terra.api.config.ConfigPack;
+import com.dfsek.terra.api.world.generation.GenerationMode;
+import com.dfsek.terra.api.world.generation.overlay.StageAction;
 import com.dfsek.terra.bukkit.world.BukkitProtoWorld;
 
 
@@ -28,6 +30,12 @@ public class BukkitBlockPopulator extends BlockPopulator {
     @Override
     public void populate(@NotNull WorldInfo worldInfo, @NotNull Random random, int chunkX, int chunkZ,
                          @NotNull LimitedRegion limitedRegion) {
+        if(pack.generationMode() == GenerationMode.OVERLAY) {
+            StageAction features = pack.overlay().stagePolicy().features();
+            if(features == StageAction.VANILLA || features == StageAction.DISABLE) {
+                return;
+            }
+        }
         pack.getStages().forEach(
             generationStage -> generationStage.populate(new BukkitProtoWorld(limitedRegion, air, pack.getBiomeProvider())));
     }

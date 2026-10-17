@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.file.FileSystem;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -75,6 +76,9 @@ import com.dfsek.terra.api.util.reflection.TypeKey;
 import com.dfsek.terra.api.world.biome.generation.BiomeProvider;
 import com.dfsek.terra.api.world.chunk.generation.stage.GenerationStage;
 import com.dfsek.terra.api.world.chunk.generation.util.provider.ChunkGeneratorProvider;
+import com.dfsek.terra.api.world.generation.GenerationMode;
+import com.dfsek.terra.api.world.generation.overlay.BiomePlacement;
+import com.dfsek.terra.api.world.generation.overlay.Overlay;
 import com.dfsek.terra.config.loaders.GenericTemplateSupplierLoader;
 import com.dfsek.terra.config.preprocessor.MetaListLikePreprocessor;
 import com.dfsek.terra.config.preprocessor.MetaMapPreprocessor;
@@ -96,6 +100,7 @@ public class ConfigPackImpl implements ConfigPack {
     private static final Logger logger = LoggerFactory.getLogger(ConfigPackImpl.class);
     private final Context context = new Context();
     private final ConfigPackTemplate template = new ConfigPackTemplate();
+    private final AtomicInteger placementOrder = new AtomicInteger();
 
     private final AbstractConfigLoader abstractConfigLoader = new AbstractConfigLoader();
     private final ConfigLoader selfLoader = new ConfigLoader();
@@ -144,6 +149,7 @@ public class ConfigPackImpl implements ConfigPack {
 
         register(selfLoader);
         platform.register(selfLoader);
+        registerOverlayLoaders();
 
         register(abstractConfigLoader);
         platform.register(abstractConfigLoader);
@@ -222,6 +228,7 @@ public class ConfigPackImpl implements ConfigPack {
         selfLoader.load(packPostTemplate, packManifest);
         seededBiomeProvider =
             template.getBiomeCache() ? packPostTemplate.getProviderBuilder().caching(platform) : packPostTemplate.getProviderBuilder();
+        validateOverlay();
         checkDeadEntries();
     }
 
@@ -368,6 +375,64 @@ public class ConfigPackImpl implements ConfigPack {
     @Override
     public ChunkGeneratorProvider getGeneratorProvider() {
         return template.getGeneratorProvider();
+    }
+
+    @Override
+    public GenerationMode generationMode() {
+        return template.getGenerationMode();
+    }
+
+    @Override
+    public Overlay overlay() {
+        return template.getOverlay();
+    }
+
+    private void validateOverlay() {
+        Set<String> biomeIds = new HashSet<>();
+        for(CheckedRegistryImpl<?> registry : registryMap.values()) {
+            if(registry.getType().getRawType().getName().equals("com.dfsek.terra.api.world.biome.Biome")) {
+                for(Object entry : registry.entries()) {
+                    biomeIds.add(((com.dfsek.terra.api.registry.key.StringIdentifiable) entry).getID());
+                }
+            }
+        }
+        Set<String> samplerIds = samplerIds();
+        template.setOverlay(OverlayValidator.validate(
+            template.getGenerationMode(),
+            template.getOverlay(),
+            biomeIds,
+            samplerIds,
+            template.getGeneratorProvider() != null));
+    }
+
+    private Set<String> samplerIds() {
+        for(com.dfsek.terra.api.properties.Properties properties : context.values()) {
+            if(properties.getClass().getName().equals("com.dfsek.terra.addons.noise.NoiseConfigPackTemplate")) {
+                try {
+                    Object samplers = properties.getClass().getMethod("getSamplers").invoke(properties);
+                    if(samplers instanceof Map<?, ?> map) {
+                        Set<String> ids = new HashSet<>();
+                        for(Object key : map.keySet()) {
+                            ids.add(String.valueOf(key));
+                        }
+                        return ids;
+                    }
+                } catch(ReflectiveOperationException exception) {
+                    throw new IllegalArgumentException("Overlay sampler names could not be read.", exception);
+                }
+            }
+        }
+        return Set.of();
+    }
+
+    private void registerOverlayLoaders() {
+        selfLoader.registerLoader(BiomePlacement.class, () -> {
+            BiomePlacementTemplate placementTemplate = new BiomePlacementTemplate();
+            int order = placementOrder.getAndIncrement();
+            placementTemplate.setOrder(order);
+            return placementTemplate;
+        });
+        selfLoader.registerLoader(Overlay.class, OverlayTemplate::new);
     }
 
     private OpenRegistry<ConfigType<?, ?>> createConfigRegistry() {

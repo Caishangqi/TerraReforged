@@ -63,6 +63,11 @@ platform:
 
   # <world>
   generator-replaced: "<prefix><#529ced>Replaced the pack in the chunk generator for world <white><world></white>."
+  generator-takeover-starting: "<prefix><#529ced>Preparing generation takeover for world <white><world></white>."
+  generator-takeover-full: "<prefix><#55ffa4>Terra full generation is active in world <white><world></white>. Height and column queries come from Terra."
+  generator-takeover-overlay: "<prefix><#55ffa4>Overlay generation is active in world <white><world></white>. Vanilla provides base terrain; placement rules select biomes."
+  generator-takeover-full-failed: "<prefix><#e73f34>Could not install Terra full generation in world <white><world></white>. The chunk source reports <white><generator></white>."
+  generator-takeover-overlay-failed: "<prefix><#e73f34>Could not install overlay generation in world <white><world></white>. The chunk source reports <white><generator></white>."
 
 custom-blocks:
   # <data>, <plugin>

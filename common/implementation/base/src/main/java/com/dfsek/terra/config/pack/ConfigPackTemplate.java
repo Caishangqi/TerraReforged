@@ -30,6 +30,8 @@ import java.util.Map;
 import com.dfsek.terra.api.config.meta.Meta;
 import com.dfsek.terra.api.world.chunk.generation.stage.GenerationStage;
 import com.dfsek.terra.api.world.chunk.generation.util.provider.ChunkGeneratorProvider;
+import com.dfsek.terra.api.world.generation.GenerationMode;
+import com.dfsek.terra.api.world.generation.overlay.Overlay;
 
 
 @SuppressWarnings({ "unused", "FieldMayBeFinal" })
@@ -105,7 +107,16 @@ public class ConfigPackTemplate implements ConfigTemplate {
     private @Meta boolean disableFlora = false;
 
     @Value("generator")
-    private @Meta ChunkGeneratorProvider generatorProvider;
+    @Default
+    private @Meta ChunkGeneratorProvider generatorProvider = null;
+
+    @Value("generation-mode")
+    @Default
+    private @Meta GenerationMode generationMode = GenerationMode.FULL;
+
+    @Value("overlay")
+    @Default
+    private @Meta Overlay overlay = null;
 
     @Value("cache.biome.enable")
     @Default
@@ -153,6 +164,18 @@ public class ConfigPackTemplate implements ConfigTemplate {
 
     public ChunkGeneratorProvider getGeneratorProvider() {
         return generatorProvider;
+    }
+
+    public GenerationMode getGenerationMode() {
+        return generationMode;
+    }
+
+    public Overlay getOverlay() {
+        return overlay;
+    }
+
+    public void setOverlay(Overlay overlay) {
+        this.overlay = overlay;
     }
 
     public List<GenerationStage> getStages() {

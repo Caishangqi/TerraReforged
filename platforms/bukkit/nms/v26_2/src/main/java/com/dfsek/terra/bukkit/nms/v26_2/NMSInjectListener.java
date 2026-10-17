@@ -6,22 +6,23 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.status.WorldGenContext;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.generator.CustomChunkGenerator;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldInitEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.dfsek.terra.api.config.ConfigPack;
+import com.dfsek.terra.api.world.generation.GenerationMode;
 import com.dfsek.terra.bukkit.generator.BukkitChunkGeneratorWrapper;
+import com.dfsek.terra.log.TerraLog;
 
 
 public class NMSInjectListener implements Listener {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NMSInjectListener.class);
     private static final Set<World> INJECTED = new HashSet<>();
     private static final ReentrantLock INJECT_LOCK = new ReentrantLock();
 
@@ -43,19 +44,22 @@ public class NMSInjectListener implements Listener {
     }
 
     private static void inject(World world, ConfigPack pack) {
-        LOGGER.info("Preparing to take over the world: {}", world.getName());
+        TerraLog.logger().send("platform.generator-takeover-starting", "world", world.getName());
         CraftWorld craftWorld = (CraftWorld) world;
         ServerLevel serverWorld = craftWorld.getHandle();
 
-        ChunkGenerator vanilla = serverWorld.getChunkSource().getGenerator();
-        NMSBiomeProvider provider = new NMSBiomeProvider(pack.getBiomeProvider(), craftWorld.getSeed());
-        NMSChunkGeneratorDelegate delegate = new NMSChunkGeneratorDelegate(vanilla, pack, provider, craftWorld.getSeed());
+        ChunkGenerator installedWorldGenerator = serverWorld.getChunkSource().getGenerator();
+        ChunkGenerator vanilla = installedWorldGenerator;
+        if(pack.generationMode() == GenerationMode.OVERLAY && installedWorldGenerator instanceof CustomChunkGenerator customGenerator) {
+            vanilla = customGenerator.getDelegate();
+        }
+        ChunkGenerator installedGenerator = generator(vanilla, pack, craftWorld.getSeed());
 
         ChunkMap chunkMap = serverWorld.getChunkSource().chunkMap;
         WorldGenContext worldGenContext = Reflection.CHUNKMAP.getWorldGenContext(chunkMap);
         Reflection.CHUNKMAP.setWorldGenContext(chunkMap, new WorldGenContext(
             worldGenContext.level(),
-            delegate,
+            installedGenerator,
             worldGenContext.structureManager(),
             worldGenContext.lightEngine(),
             worldGenContext.mainThreadExecutor(),
@@ -66,11 +70,26 @@ public class NMSInjectListener implements Listener {
         // write that does not land leaves vanilla answering getBaseHeight and getBaseColumn while Terra
         // terrain still appears through the Bukkit generator. That is the failure worth naming out loud.
         ChunkGenerator installed = serverWorld.getChunkSource().getGenerator();
-        if(installed == delegate) {
-            LOGGER.info("Successfully injected into world {}. Height and column queries now come from Terra.", world.getName());
+        if(installed == installedGenerator) {
+            String message = pack.generationMode() == GenerationMode.OVERLAY
+                ? "platform.generator-takeover-overlay"
+                : "platform.generator-takeover-full";
+            TerraLog.logger().send(message, Map.of("world", world.getName()));
         } else {
-            LOGGER.error("Failed to take over world {}. The chunk source still reports {}, so height and column queries " +
-                         "will fall back to vanilla.", world.getName(), installed.getClass().getName());
+            String message = pack.generationMode() == GenerationMode.OVERLAY
+                ? "platform.generator-takeover-overlay-failed"
+                : "platform.generator-takeover-full-failed";
+            TerraLog.logger().send(message, Map.of(
+                "world", world.getName(),
+                "generator", installed.getClass().getName()));
         }
+    }
+
+    private static ChunkGenerator generator(ChunkGenerator vanilla, ConfigPack pack, long seed) {
+        if(pack.generationMode() == GenerationMode.OVERLAY) {
+            return new NMSVanillaOverlayGenerator(vanilla, pack, seed);
+        }
+        NMSBiomeProvider provider = new NMSBiomeProvider(pack.getBiomeProvider(), seed);
+        return new NMSChunkGeneratorDelegate(vanilla, pack, provider, seed);
     }
 }

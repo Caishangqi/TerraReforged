@@ -7,6 +7,7 @@
 
 package com.dfsek.terra.api.properties;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,5 +55,9 @@ public class Context {
 
     public <T extends Properties> boolean has(Class<T> test) {
         return map.containsKey(test);
+    }
+
+    public Collection<Properties> values() {
+        return map.values();
     }
 }

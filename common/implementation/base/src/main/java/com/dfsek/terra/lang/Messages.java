@@ -87,6 +87,16 @@ public final class Messages {
 
         lines.put("platform.generator-replaced",
             "<prefix><#529ced>Replaced the pack in the chunk generator for world <white><world></white>.");
+        lines.put("platform.generator-takeover-starting",
+            "<prefix><#529ced>Preparing generation takeover for world <white><world></white>.");
+        lines.put("platform.generator-takeover-full",
+            "<prefix><#55ffa4>Terra full generation is active in world <white><world></white>. Height and column queries come from Terra.");
+        lines.put("platform.generator-takeover-overlay",
+            "<prefix><#55ffa4>Overlay generation is active in world <white><world></white>. Vanilla provides base terrain; placement rules select biomes.");
+        lines.put("platform.generator-takeover-full-failed",
+            "<prefix><#e73f34>Could not install Terra full generation in world <white><world></white>. The chunk source reports <white><generator></white>.");
+        lines.put("platform.generator-takeover-overlay-failed",
+            "<prefix><#e73f34>Could not install overlay generation in world <white><world></white>. The chunk source reports <white><generator></white>.");
 
         lines.put("custom-blocks.plugin-missing",
             "\"<data>\" is a <plugin> block, but <plugin> is not installed on this server.");

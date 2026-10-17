@@ -37,6 +37,9 @@ public class UserDefinedBiome implements Biome {
         this.intID = INT_ID_COUNTER.getAndIncrement();
         tags.add("BIOME:" + id);
         tags.add("ALL");
+        if(config.getMaterialSettings() != null) {
+            context.put(config.getMaterialSettings());
+        }
     }
 
     @Override

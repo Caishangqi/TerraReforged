@@ -32,7 +32,10 @@ import java.util.Random;
 import com.dfsek.terra.api.block.state.BlockState;
 import com.dfsek.terra.api.config.ConfigPack;
 import com.dfsek.terra.api.world.chunk.generation.ChunkGenerator;
+import com.dfsek.terra.api.world.chunk.generation.ProtoChunk;
 import com.dfsek.terra.api.world.chunk.generation.util.GeneratorWrapper;
+import com.dfsek.terra.api.world.chunk.generation.util.Palette;
+import com.dfsek.terra.api.world.generation.GenerationMode;
 import com.dfsek.terra.api.world.info.WorldProperties;
 import com.dfsek.terra.bukkit.world.BukkitWorldProperties;
 
@@ -58,11 +61,17 @@ public class BukkitChunkGeneratorWrapper extends org.bukkit.generator.ChunkGener
 
     @Override
     public @Nullable BiomeProvider getDefaultBiomeProvider(@NotNull WorldInfo worldInfo) {
+        if(pack.generationMode() == GenerationMode.OVERLAY) {
+            return null;
+        }
         return new BukkitBiomeProvider(pack.getBiomeProvider());
     }
 
     @Override
     public void generateNoise(@NotNull WorldInfo worldInfo, @NotNull Random random, int x, int z, @NotNull ChunkData chunkData) {
+        if(pack.generationMode() == GenerationMode.OVERLAY) {
+            return;
+        }
         BukkitWorldProperties properties = new BukkitWorldProperties(worldInfo);
         delegate.generateChunkData(new BukkitProtoChunk(chunkData), properties, pack.getBiomeProvider(), x, z);
     }
@@ -74,8 +83,7 @@ public class BukkitChunkGeneratorWrapper extends org.bukkit.generator.ChunkGener
 
     @Override
     public boolean shouldGenerateCaves() {
-        return false;
-        //return pack.vanillaCaves();
+        return pack.generationMode() == GenerationMode.OVERLAY;
     }
 
     @Override
@@ -99,12 +107,46 @@ public class BukkitChunkGeneratorWrapper extends org.bukkit.generator.ChunkGener
 
     public void setPack(ConfigPack pack) {
         this.pack = pack;
-        setDelegate(pack.getGeneratorProvider().newInstance(pack));
+        this.delegate = createDelegate(pack, air);
+        this.blockPopulator.setPack(pack);
+    }
+
+    public static ChunkGenerator createDelegate(ConfigPack pack, BlockState air) {
+        if(pack.generationMode() == GenerationMode.OVERLAY) {
+            return new OverlayGenerator(air);
+        }
+        return pack.getGeneratorProvider().newInstance(pack);
     }
 
     @Override
     public ChunkGenerator getHandle() {
         return delegate;
+    }
+
+    private static final class OverlayGenerator implements ChunkGenerator {
+        private final BlockState air;
+
+        private OverlayGenerator(BlockState air) {
+            this.air = air;
+        }
+
+        @Override
+        public void generateChunkData(ProtoChunk chunk, WorldProperties world,
+                                      com.dfsek.terra.api.world.biome.generation.BiomeProvider biomeProvider,
+                                      int chunkX, int chunkZ) {
+        }
+
+        @Override
+        public BlockState getBlock(WorldProperties world, int x, int y, int z,
+                                   com.dfsek.terra.api.world.biome.generation.BiomeProvider biomeProvider) {
+            return air;
+        }
+
+        @Override
+        public Palette getPalette(int x, int y, int z, WorldProperties world,
+                                 com.dfsek.terra.api.world.biome.generation.BiomeProvider biomeProvider) {
+            throw new UnsupportedOperationException("Overlay generation does not define a terrain palette.");
+        }
     }
 
 
