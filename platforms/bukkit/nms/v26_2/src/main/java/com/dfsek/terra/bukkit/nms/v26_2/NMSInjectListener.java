@@ -6,6 +6,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.status.WorldGenContext;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
+import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import org.bukkit.craftbukkit.generator.CustomChunkGenerator;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,6 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.dfsek.terra.api.config.ConfigPack;
 import com.dfsek.terra.api.world.generation.GenerationMode;
+import com.dfsek.terra.api.world.generation.TerrainSource;
 import com.dfsek.terra.bukkit.generator.BukkitChunkGeneratorWrapper;
 import com.dfsek.terra.log.TerraLog;
 
@@ -50,10 +52,25 @@ public class NMSInjectListener implements Listener {
 
         ChunkGenerator installedWorldGenerator = serverWorld.getChunkSource().getGenerator();
         ChunkGenerator vanilla = installedWorldGenerator;
-        if(pack.generationMode() == GenerationMode.OVERLAY && installedWorldGenerator instanceof CustomChunkGenerator customGenerator) {
-            vanilla = customGenerator.getDelegate();
+        ChunkGenerator terrain = installedWorldGenerator;
+        if(installedWorldGenerator instanceof CustomChunkGenerator customGenerator) {
+            if(pack.generationMode() == GenerationMode.OVERLAY) {
+                vanilla = customGenerator.getDelegate();
+                terrain = vanilla;
+            } else {
+                // The Bukkit generator replaces noise, surface, carvers and decoration but not the terrain
+                // underneath it. A pack asking for vanilla terrain reads that generator.
+                terrain = customGenerator.getDelegate();
+            }
         }
-        ChunkGenerator installedGenerator = generator(vanilla, pack, craftWorld.getSeed());
+
+        if(pack.terrainSource() == TerrainSource.VANILLA && !(terrain instanceof NoiseBasedChunkGenerator)) {
+            throw new IllegalStateException("World " + world.getName() + " uses terrain-source VANILLA, but the generator " +
+                                            "under the Bukkit wrapper is " + terrain.getClass().getName() +
+                                            " instead of a noise generator.");
+        }
+
+        ChunkGenerator installedGenerator = generator(vanilla, terrain, pack, craftWorld.getSeed());
 
         ChunkMap chunkMap = serverWorld.getChunkSource().chunkMap;
         WorldGenContext worldGenContext = Reflection.CHUNKMAP.getWorldGenContext(chunkMap);
@@ -85,11 +102,11 @@ public class NMSInjectListener implements Listener {
         }
     }
 
-    private static ChunkGenerator generator(ChunkGenerator vanilla, ConfigPack pack, long seed) {
+    private static ChunkGenerator generator(ChunkGenerator vanilla, ChunkGenerator terrain, ConfigPack pack, long seed) {
         if(pack.generationMode() == GenerationMode.OVERLAY) {
             return new NMSVanillaOverlayGenerator(vanilla, pack, seed);
         }
         NMSBiomeProvider provider = new NMSBiomeProvider(pack.getBiomeProvider(), seed);
-        return new NMSChunkGeneratorDelegate(vanilla, pack, provider, seed);
+        return new NMSChunkGeneratorDelegate(vanilla, terrain, pack, provider, seed);
     }
 }

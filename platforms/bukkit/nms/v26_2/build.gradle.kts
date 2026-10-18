@@ -13,6 +13,8 @@ dependencies {
     api(project(":platforms:bukkit:common"))
     paperweight.paperDevBundle(Versions.Bukkit.paperDevBundle)
     implementation("xyz.jpenilla", "reflection-remapper", Versions.Bukkit.reflectionRemapper)
+
+    testImplementation("com.dfsek.tectonic", "yaml", Versions.Libraries.tectonic)
 }
 
 tasks.test {

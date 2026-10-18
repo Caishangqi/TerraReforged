@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.npc.villager.VillagerType;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import org.bukkit.NamespacedKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,10 @@ import java.util.Set;
 
 import com.dfsek.terra.api.config.ConfigPack;
 import com.dfsek.terra.api.registry.key.RegistryKey;
+import com.dfsek.terra.api.world.generation.vanilla.VanillaGeneration;
 import com.dfsek.terra.bukkit.nms.v26_2.config.VanillaBiomeProperties;
+import com.dfsek.terra.bukkit.nms.v26_2.config.VanillaGenerationProperties;
+import com.dfsek.terra.bukkit.nms.v26_2.worldgen.PackWorldgen;
 import com.dfsek.terra.bukkit.world.BukkitBiomeInfo;
 import com.dfsek.terra.bukkit.world.BukkitPlatformBiome;
 import com.dfsek.terra.registry.master.ConfigRegistry;
@@ -88,6 +92,30 @@ public class AwfulBukkitHacks {
         }
     }
 
+    /**
+     * Builds the vanilla generation settings a Terra biome declares.
+     * <p>
+     * A biome whose config failed to load has no vanilla generation section, so it gets the empty settings
+     * rather than aborting registration for the rest of the pack. A section that names a feature or carver the
+     * pack and the server registry both lack does abort, with the biome key in the message.
+     */
+    private static BiomeGenerationSettings generationSettings(ConfigPack pack, RegistryKey key,
+                                                              com.dfsek.terra.api.world.biome.Biome biome) {
+        VanillaGeneration generation;
+        try {
+            generation = biome.getContext().get(VanillaGenerationProperties.class).get();
+        } catch(IllegalArgumentException exception) {
+            return BiomeGenerationSettings.EMPTY;
+        }
+
+        try {
+            return PackWorldgen.of(pack).settings(generation);
+        } catch(IllegalArgumentException exception) {
+            throw new IllegalArgumentException("Biome " + key + " in pack " + pack.getID() + ": " + exception.getMessage(),
+                exception);
+        }
+    }
+
     private static void registerBiome(MappedRegistry<Biome> biomeRegistry, ConfigPack pack, RegistryKey key,
                                       com.dfsek.terra.api.world.biome.Biome biome,
                                       Map<Identifier, List<Identifier>> terraBiomes) {
@@ -108,8 +136,9 @@ public class AwfulBukkitHacks {
             return;
         }
 
-        Biome platform = NMSBiomeInjector.createBiome(biomeRegistry.get(vanillaMinecraftKey).orElseThrow().value(),
-            vanillaBiomeProperties);
+        Holder.Reference<Biome> vanillaHolder = biomeRegistry.get(vanillaMinecraftKey).orElseThrow();
+        Biome platform = NMSBiomeInjector.createBiome(vanillaHolder.value(), vanillaBiomeProperties,
+            generationSettings(pack, key, biome));
 
         Identifier delegateMinecraftKey = Identifier.fromNamespaceAndPath("terra",
             NMSBiomeInjector.createBiomeID(pack, key));
@@ -117,6 +146,9 @@ public class AwfulBukkitHacks {
         ResourceKey<Biome> delegateKey = ResourceKey.create(Registries.BIOME, delegateMinecraftKey);
 
         Reference<Biome> holder = biomeRegistry.register(delegateKey, platform, RegistrationInfo.BUILT_IN);
+        PackWorldgen worldgen = PackWorldgen.of(pack);
+        worldgen.putSettings(holder, platform.getGenerationSettings());
+        worldgen.putVanillaBase(holder, vanillaHolder);
 
         platformBiome.getContext().put(new BukkitBiomeInfo(delegateBukkitKey));
         platformBiome.getContext().put(new NMSBiomeInfo(delegateKey));

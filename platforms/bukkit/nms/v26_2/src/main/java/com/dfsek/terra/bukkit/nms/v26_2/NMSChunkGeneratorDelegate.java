@@ -2,12 +2,15 @@ package com.dfsek.terra.bukkit.nms.v26_2;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -16,6 +19,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Beardifier;
 import net.minecraft.world.level.levelgen.DensityFunction.SinglePointContext;
 import net.minecraft.world.level.levelgen.Heightmap.Types;
+import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
@@ -25,11 +29,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import com.dfsek.terra.api.config.ConfigPack;
 import com.dfsek.terra.api.world.biome.generation.BiomeProvider;
+import com.dfsek.terra.api.world.generation.TerrainSource;
 import com.dfsek.terra.api.world.info.WorldProperties;
 import com.dfsek.terra.bukkit.config.PreLoadCompatibilityOptions;
+import com.dfsek.terra.bukkit.nms.v26_2.worldgen.PackCarverPass;
+import com.dfsek.terra.bukkit.nms.v26_2.worldgen.PackSurfacePass;
+import com.dfsek.terra.bukkit.nms.v26_2.worldgen.PackWorldgen;
 import com.dfsek.terra.bukkit.world.BukkitWorldProperties;
 import com.dfsek.terra.bukkit.world.block.data.BukkitBlockState;
 
@@ -39,16 +48,34 @@ public class NMSChunkGeneratorDelegate extends ChunkGenerator {
     private final com.dfsek.terra.api.world.chunk.generation.ChunkGenerator delegate;
 
     private final ChunkGenerator vanilla;
+    private final ChunkGenerator terrain;
     private final ConfigPack pack;
 
     private final long seed;
 
-    public NMSChunkGeneratorDelegate(ChunkGenerator vanilla, ConfigPack pack, NMSBiomeProvider biomeProvider, long seed) {
-        super(biomeProvider);
+    public NMSChunkGeneratorDelegate(ChunkGenerator vanilla, ChunkGenerator terrain, ConfigPack pack,
+                                     NMSBiomeProvider biomeProvider, long seed) {
+        super(biomeProvider, generationSettings(pack));
         this.delegate = pack.getGeneratorProvider().newInstance(pack);
         this.vanilla = vanilla;
+        this.terrain = terrain;
         this.pack = pack;
         this.seed = seed;
+    }
+
+    /**
+     * Tells the inherited generator where a biome's features and carvers come from.
+     * <p>
+     * The vanilla terrain source reads them from the pack's decoded objects, which is what lets the feature
+     * sorter and the decoration pass see the pack's own lists. Every other pack keeps reading the settings
+     * stored on the biome object, as before.
+     */
+    private static Function<Holder<Biome>, BiomeGenerationSettings> generationSettings(ConfigPack pack) {
+        if(pack.terrainSource() != TerrainSource.VANILLA) {
+            return holder -> holder.value().getGenerationSettings();
+        }
+        PackWorldgen worldgen = PackWorldgen.of(pack);
+        return worldgen::settingsFor;
     }
 
     @Override
@@ -59,19 +86,29 @@ public class NMSChunkGeneratorDelegate extends ChunkGenerator {
     @Override
     public void applyCarvers(@NotNull WorldGenRegion chunkRegion, long seed, @NotNull RandomState noiseConfig, @NotNull BiomeManager world,
                              @NotNull StructureManager structureAccessor, @NotNull ChunkAccess chunk) {
-        // no-op
+        if(pack.terrainSource() == TerrainSource.VANILLA && terrain instanceof NoiseBasedChunkGenerator noiseGenerator) {
+            PackCarverPass.apply(chunkRegion, seed, noiseConfig, world, structureAccessor, chunk, this, noiseGenerator,
+                noiseGenerator.generatorSettings().value());
+        }
     }
 
     @Override
-    public void buildSurface(@NotNull WorldGenRegion region, @NotNull StructureManager structures, @NotNull RandomState noiseConfig,
+    public void buildSurface(@NotNull WorldGenRegion region, @NotNull StructureManager structures, @NotNull RandomState randomState,
                              @NotNull ChunkAccess chunk) {
-        // no-op
+        if(pack.terrainSource() == TerrainSource.VANILLA && terrain instanceof NoiseBasedChunkGenerator noiseGenerator) {
+            PackSurfacePass.apply(region, structures, randomState, chunk, this,
+                noiseGenerator.generatorSettings().value(), PackWorldgen.of(pack));
+        }
     }
 
     @Override
     public void applyBiomeDecoration(@NotNull WorldGenLevel world, @NotNull ChunkAccess chunk,
                                      @NotNull StructureManager structureAccessor) {
-        vanilla.applyBiomeDecoration(world, chunk, structureAccessor);
+        if(pack.terrainSource() == TerrainSource.VANILLA) {
+            super.applyBiomeDecoration(world, chunk, structureAccessor);
+        } else {
+            vanilla.applyBiomeDecoration(world, chunk, structureAccessor);
+        }
     }
 
     @Override
@@ -88,6 +125,9 @@ public class NMSChunkGeneratorDelegate extends ChunkGenerator {
     public CompletableFuture<ChunkAccess> fillFromNoise(@NotNull Blender blender,
                                                         @NotNull RandomState noiseConfig,
                                                         @NotNull StructureManager structureAccessor, @NotNull ChunkAccess chunk) {
+        if(pack.terrainSource() == TerrainSource.VANILLA) {
+            return terrain.fillFromNoise(blender, noiseConfig, structureAccessor, chunk);
+        }
         return vanilla.fillFromNoise(blender, noiseConfig, structureAccessor, chunk)
             .thenApply(c -> {
                 LevelAccessor level = Reflection.STRUCTURE_MANAGER.getLevel(structureAccessor);
@@ -140,6 +180,9 @@ public class NMSChunkGeneratorDelegate extends ChunkGenerator {
 
     @Override
     public int getBaseHeight(int x, int z, @NotNull Types heightmap, @NotNull LevelHeightAccessor world, @NotNull RandomState noiseConfig) {
+        if(pack.terrainSource() == TerrainSource.VANILLA) {
+            return terrain.getBaseHeight(x, z, heightmap, world, noiseConfig);
+        }
         WorldProperties properties = new NMSWorldProperties(seed, world);
         int y = properties.getMaxHeight();
         BiomeProvider biomeProvider = pack.getBiomeProvider();
@@ -152,6 +195,9 @@ public class NMSChunkGeneratorDelegate extends ChunkGenerator {
 
     @Override
     public @NotNull NoiseColumn getBaseColumn(int x, int z, @NotNull LevelHeightAccessor world, @NotNull RandomState noiseConfig) {
+        if(pack.terrainSource() == TerrainSource.VANILLA) {
+            return terrain.getBaseColumn(x, z, world, noiseConfig);
+        }
         BlockState[] array = new BlockState[world.getHeight()];
         WorldProperties properties = new NMSWorldProperties(seed, world);
         BiomeProvider biomeProvider = pack.getBiomeProvider();

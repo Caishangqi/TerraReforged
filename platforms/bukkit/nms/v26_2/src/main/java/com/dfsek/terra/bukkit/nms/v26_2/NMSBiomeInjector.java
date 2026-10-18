@@ -32,7 +32,8 @@ public class NMSBiomeInjector {
             .flatMap(registry::get);
     }
 
-    public static Biome createBiome(Biome vanilla, VanillaBiomeProperties vanillaBiomeProperties) {
+    public static Biome createBiome(Biome vanilla, VanillaBiomeProperties vanillaBiomeProperties,
+                                    BiomeGenerationSettings generationSettings) {
         // 26.2 moved fog, sky, ambient particles, ambient sounds, and music out of BiomeSpecialEffects
         // into the environment attribute map. BiomeSpecialEffects now only carries the block colors.
         EnvironmentAttributeMap vanillaAttributes = vanilla.getAttributes();
@@ -74,7 +75,7 @@ public class NMSBiomeInjector {
             .mobSpawnSettings(Objects.requireNonNullElse(vanillaBiomeProperties.getSpawnSettings(), vanilla.getMobSettings()))
             .putAttributes(attributes)
             .specialEffects(effects.build())
-            .generationSettings(new BiomeGenerationSettings.PlainBuilder().build())
+            .generationSettings(generationSettings)
             .build();
     }
 
