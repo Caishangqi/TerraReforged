@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,6 +78,7 @@ import com.dfsek.terra.api.world.biome.generation.BiomeProvider;
 import com.dfsek.terra.api.world.chunk.generation.stage.GenerationStage;
 import com.dfsek.terra.api.world.chunk.generation.util.provider.ChunkGeneratorProvider;
 import com.dfsek.terra.api.world.generation.GenerationMode;
+import com.dfsek.terra.api.world.generation.TerrainSource;
 import com.dfsek.terra.api.world.generation.overlay.BiomePlacement;
 import com.dfsek.terra.api.world.generation.overlay.Overlay;
 import com.dfsek.terra.config.loaders.GenericTemplateSupplierLoader;
@@ -380,6 +382,16 @@ public class ConfigPackImpl implements ConfigPack {
     @Override
     public GenerationMode generationMode() {
         return template.getGenerationMode();
+    }
+
+    @Override
+    public TerrainSource terrainSource() {
+        return template.getTerrainSource();
+    }
+
+    @Override
+    public Optional<String> surfaceRule() {
+        return Optional.ofNullable(template.getSurfaceRule());
     }
 
     @Override

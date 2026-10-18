@@ -14,6 +14,7 @@ import com.dfsek.paralithic.eval.parser.Parser.ParseOptions;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.dfsek.terra.api.addon.BaseAddon;
 import com.dfsek.terra.api.properties.PropertyHolder;
@@ -29,6 +30,7 @@ import com.dfsek.terra.api.world.biome.generation.BiomeProvider;
 import com.dfsek.terra.api.world.chunk.generation.stage.GenerationStage;
 import com.dfsek.terra.api.world.chunk.generation.util.provider.ChunkGeneratorProvider;
 import com.dfsek.terra.api.world.generation.GenerationMode;
+import com.dfsek.terra.api.world.generation.TerrainSource;
 import com.dfsek.terra.api.world.generation.overlay.Overlay;
 
 
@@ -64,6 +66,20 @@ public interface ConfigPack extends LoaderRegistrar,
     ChunkGeneratorProvider getGeneratorProvider();
 
     GenerationMode generationMode();
+
+    /**
+     * Where this pack takes its terrain shape from. Packs that predate the field report {@link TerrainSource#TERRA}.
+     *
+     * @return The terrain source.
+     */
+    TerrainSource terrainSource();
+
+    /**
+     * The id of the surface rule this pack declares, when pack.yml names one.
+     *
+     * @return The declared surface rule id, empty when pack.yml leaves it out.
+     */
+    Optional<String> surfaceRule();
 
     Overlay overlay();
 }

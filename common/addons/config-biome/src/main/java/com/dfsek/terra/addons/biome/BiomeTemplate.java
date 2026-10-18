@@ -24,6 +24,7 @@ import com.dfsek.terra.api.config.meta.Meta;
 import com.dfsek.terra.api.world.biome.PlatformBiome;
 import com.dfsek.terra.api.world.chunk.generation.util.Palette;
 import com.dfsek.terra.api.world.generation.overlay.OverlayMaterialSettings;
+import com.dfsek.terra.api.world.generation.vanilla.VanillaGeneration;
 
 
 @SuppressWarnings({ "FieldMayBeFinal", "unused" })
@@ -70,6 +71,10 @@ public class BiomeTemplate implements AbstractableTemplate, ValidatedConfigTempl
     @Default
     private @Meta Palette undergroundPalette = null;
 
+    @Value("vanilla-generation")
+    @Default
+    private @Meta VanillaGeneration vanillaGeneration = VanillaGeneration.EMPTY;
+
     public BiomeTemplate(ConfigPack pack, Platform platform) {
         this.pack = pack;
     }
@@ -102,6 +107,10 @@ public class BiomeTemplate implements AbstractableTemplate, ValidatedConfigTempl
 
     public PlatformBiome getVanilla() {
         return vanilla;
+    }
+
+    public VanillaGeneration getVanillaGeneration() {
+        return vanillaGeneration;
     }
 
     public OverlayMaterialSettings getMaterialSettings() {

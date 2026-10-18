@@ -15,6 +15,7 @@ import com.dfsek.terra.api.addon.BaseAddon;
 import com.dfsek.terra.api.event.events.config.pack.ConfigPackPreLoadEvent;
 import com.dfsek.terra.api.event.functional.FunctionalEventHandler;
 import com.dfsek.terra.api.inject.annotations.Inject;
+import com.dfsek.terra.api.world.generation.vanilla.VanillaGeneration;
 
 
 public class BiomeAddon implements AddonInitializer {
@@ -32,6 +33,7 @@ public class BiomeAddon implements AddonInitializer {
             .then(event -> {
                 event.getPack().registerConfigType(new BiomeConfigType(event.getPack()), addon.key("BIOME"), 1000);
                 event.getPack().applyLoader(PaletteHolder.class, new PaletteHolderLoader());
+                event.getPack().applyLoader(VanillaGeneration.class, VanillaGenerationTemplate::new);
             })
             .failThrough();
     }

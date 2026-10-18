@@ -31,6 +31,7 @@ import com.dfsek.terra.api.config.meta.Meta;
 import com.dfsek.terra.api.world.chunk.generation.stage.GenerationStage;
 import com.dfsek.terra.api.world.chunk.generation.util.provider.ChunkGeneratorProvider;
 import com.dfsek.terra.api.world.generation.GenerationMode;
+import com.dfsek.terra.api.world.generation.TerrainSource;
 import com.dfsek.terra.api.world.generation.overlay.Overlay;
 
 
@@ -114,6 +115,14 @@ public class ConfigPackTemplate implements ConfigTemplate {
     @Default
     private @Meta GenerationMode generationMode = GenerationMode.FULL;
 
+    @Value("terrain-source")
+    @Default
+    private @Meta TerrainSource terrainSource = TerrainSource.TERRA;
+
+    @Value("surface-rule")
+    @Default
+    private String surfaceRule = null;
+
     @Value("overlay")
     @Default
     private @Meta Overlay overlay = null;
@@ -168,6 +177,14 @@ public class ConfigPackTemplate implements ConfigTemplate {
 
     public GenerationMode getGenerationMode() {
         return generationMode;
+    }
+
+    public TerrainSource getTerrainSource() {
+        return terrainSource;
+    }
+
+    public String getSurfaceRule() {
+        return surfaceRule;
     }
 
     public Overlay getOverlay() {
